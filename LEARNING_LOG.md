@@ -49,3 +49,38 @@ Import the Python libraries and begin exploring NFL data.
 - Postgame information can be used to construct the target but cannot be used as model input.
 - A baseline provides a simple benchmark that a machine-learning model should outperform.
 - Raw data should remain unchanged while transformed data is stored separately.
+
+## Session 4 - Creating Pregame Team Features
+
+### What I did
+
+- Converted game-level data into team-level observations.
+- Represented each NFL game from both teams' perspectives.
+- Calculated points for, points against, and point differential.
+- Created rolling five-game pregame statistics.
+- Used `shift(1)` to ensure the current game is excluded from its own features.
+
+### Concepts learned
+
+- Feature engineering transforms raw data into information useful for a model.
+- Rolling windows summarize recent performance.
+- `shift(1)` prevents current-game information from leaking into pregame features.
+- Each feature must represent information that would have been known before kickoff.
+- Early-season games create missing-data problems because little current-season history exists.
+
+## Session 5 - Offensive and Defensive Efficiency
+
+### What I did
+
+- Created efficiency metrics including passing EPA per dropback, rushing EPA per carry, sack rate, and turnovers.
+- Derived defensive performance from opponent offensive statistics.
+- Joined offensive and defensive information into one team-level dataset.
+- Created rolling five-game pregame efficiency metrics.
+
+### Concepts learned
+
+- Efficiency metrics can be more informative than raw volume statistics.
+- EPA measures how much a play changes expected scoring value.
+- Opponent offensive performance can be used to measure defensive performance.
+- A self-join can combine related observations from the same dataset.
+- Rolling features must use `shift(1)` to prevent information from the current game from leaking into predictions.
