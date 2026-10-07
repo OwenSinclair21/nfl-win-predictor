@@ -206,3 +206,48 @@ The dataset was split chronologically:
 - The validation set is used to compare modeling decisions.
 - The test set should remain untouched until final evaluation.
 - A baseline provides a simple benchmark that a useful model should outperform.
+
+### Development Environment Issue
+
+The first attempt to train logistic regression caused the Jupyter kernel to crash even on a small synthetic dataset.
+
+The model worked successfully when run directly from an activated Conda terminal, which showed that the data and scikit-learn code were not the cause.
+
+The issue was isolated to how VS Code was launching the Conda Jupyter kernel. After correcting the VS Code environment activation behavior, the logistic regression pipeline successfully trained inside the notebook.
+
+This taught me that a Python environment includes more than the Python executable itself. Environment variables, DLL paths, and how a process is launched can affect compiled numerical libraries used by packages such as NumPy, SciPy, and scikit-learn.
+
+## Session 8 - First Machine Learning Model
+
+### Model
+
+I trained the first version of the NFL prediction model using logistic regression.
+
+The model uses a scikit-learn Pipeline containing:
+
+1. StandardScaler
+2. LogisticRegression
+
+The scaler learns feature means and standard deviations only from the training set before the classifier is trained.
+
+### Validation Results
+
+- Home-team baseline accuracy: 52.34%
+- Logistic regression validation accuracy: 64.06%
+- Improvement over baseline: 11.72 percentage points
+- Validation log loss: 0.6485
+
+The model was trained using games from 2015-2023 and evaluated on the unseen 2024 season.
+
+### Concepts Learned
+
+- `.fit()` learns model parameters from training data.
+- `.predict()` returns predicted classes.
+- `.predict_proba()` returns probabilities for each class.
+- Accuracy measures the percentage of correct classifications.
+- Log loss evaluates probability quality and penalizes confident incorrect predictions.
+- Logistic regression learns one coefficient for each input feature.
+- Positive coefficients push predictions toward the positive class (`home_win = 1`).
+- Negative coefficients push predictions toward the negative class.
+- Standardization makes logistic-regression coefficients easier to compare because features are placed on similar scales.
+- Model coefficients represent predictive relationships and should not automatically be interpreted as causal effects.
