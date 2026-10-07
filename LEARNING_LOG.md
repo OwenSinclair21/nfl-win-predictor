@@ -84,3 +84,125 @@ Import the Python libraries and begin exploring NFL data.
 - Opponent offensive performance can be used to measure defensive performance.
 - A self-join can combine related observations from the same dataset.
 - Rolling features must use `shift(1)` to prevent information from the current game from leaking into predictions.
+
+## Session 6 - Building the Game-Level Dataset
+
+### What I did
+
+- Merged each team's rolling pregame statistics onto the game-level schedule.
+- Created separate home-team and away-team feature columns.
+- Standardized feature naming across the dataset.
+- Verified that the game-level merge preserved one row per NFL game.
+- Began checking missing values before constructing the final ML dataset.
+
+### Concepts learned
+
+- `isna()` identifies missing values in a Pandas DataFrame.
+- `sum()` can count missing values because boolean `True` values behave like 1.
+- `any(axis=1)` checks whether any column in a row satisfies a condition.
+- `dropna(subset=...)` removes rows containing missing values in specified columns.
+- Missing data should be investigated before being removed.
+- Week 1 naturally has missing rolling statistics because there are no earlier games in the same season.
+- A model-training dataset should be validated before training begins.
+
+### Current Dataset
+
+The current game-level dataset contains:
+
+- One row per NFL game
+- Home-team pregame offensive and defensive statistics
+- Away-team pregame offensive and defensive statistics
+- Rest information
+- Binary target: `home_win`
+
+### Next Step
+
+Investigate missing feature values, finalize Dataset V1, and then split the data chronologically into training, validation, and test sets.
+
+### Missing Data Investigation
+
+The first cleaned dataset dropped 290 games because one or more model features were missing.
+
+I learned that missing values should not be removed blindly.
+
+The missing-value analysis showed that all home-team features were missing together in many rows, and all away-team features were also missing together. This suggested a merge-key problem rather than individual feature calculation errors.
+
+I also learned:
+
+- `.any(axis=1)` checks whether a row contains at least one matching condition.
+- `pd.concat()` can combine multiple Series into one longer Series.
+- `.value_counts()` counts how often each distinct value occurs.
+- `.unique()` returns the distinct values in a column.
+- Systematic missing data can create selection bias if rows are dropped without investigation.
+
+The next step is to verify whether historical NFL team abbreviations are causing join failures between the schedule and team-stat datasets.
+
+### Historical Team Identifier Bug
+
+The missing-data analysis revealed that entire blocks of home or away features were missing together.
+
+The cause was inconsistent NFL team abbreviations between two data sources.
+
+Historical schedule data used:
+
+- OAK - Oakland Raiders
+- SD - San Diego Chargers
+- STL - St. Louis Rams
+
+The team statistics dataset used modern canonical abbreviations:
+
+- LV - Las Vegas Raiders
+- LAC - Los Angeles Chargers
+- LA - Los Angeles Rams
+
+Because Pandas joins require exact matches, values such as `OAK` and `LV` were treated as completely different teams. This caused the team profile merge to fail and produced NaN values for the entire team's feature set.
+
+I learned:
+
+- Merge keys must use consistent identifiers across datasets.
+- Categorical values should be standardized before downstream processing.
+- `.replace(mapping_dictionary)` can standardize categorical values.
+- Fixing data inconsistencies upstream is better than patching the final dataset.
+- Missing data can expose problems in earlier stages of a data pipeline.
+- Game IDs should remain unchanged because they are identifiers rather than team-name categories.
+
+This reinforced why missing values should be investigated rather than immediately dropped.
+
+### Missing Data Resolution
+
+After standardizing historical team abbreviations across the schedule and team-stat datasets, the number of games removed because of missing model features dropped from 290 to 174.
+
+This recovered 116 games that had previously been lost because team identifiers did not match during the merge.
+
+The remaining missing rows were verified to correspond to teams playing their first game of the season. This includes an unusual case where Tampa Bay and Miami played their first game in Week 2.
+
+This showed me that:
+
+- Missing data should be investigated before being removed.
+- Merge-key inconsistencies can silently remove large amounts of usable data.
+- The first game of a season has no current-season rolling history, regardless of its official week number.
+- Validation checks are important before model training begins.
+
+## Session 7 - Preparing Data for Modeling
+
+### Dataset Split
+
+The final Version 1 dataset contains 2,711 usable games and 17 pregame features.
+
+The dataset was split chronologically:
+
+- Training: 2,200 games from 2015–2023
+- Validation: 256 games from 2024
+- Test: 255 games from 2025
+
+### Concepts Learned
+
+- `X` represents the model's input features.
+- `y` represents the target the model is trying to predict.
+- A Boolean mask can select rows that satisfy a condition.
+- `.loc[mask]` selects rows where the mask is `True`.
+- Sports prediction data should be split chronologically rather than randomly because the goal is to predict future games using past information.
+- The training set is used to fit the model.
+- The validation set is used to compare modeling decisions.
+- The test set should remain untouched until final evaluation.
+- A baseline provides a simple benchmark that a useful model should outperform.
